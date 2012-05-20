@@ -43,6 +43,9 @@ class ShowOff < Sinatra::Application
     @logger.formatter = proc { |severity,datetime,progname,msg| "#{progname} #{msg}\n" }
     @logger.level = settings.verbose ? Logger::DEBUG : Logger::WARN
 
+    @analytics = Logger.new("analytics-#{Time.now.strftime('%Y%m%d%H%M%S')}.log")
+    @analytics.info 'presentation started'
+
     dir = File.expand_path(File.join(File.dirname(__FILE__), '..'))
     @logger.debug(dir)
 
@@ -573,6 +576,12 @@ class ShowOff < Sinatra::Application
     return eval_ruby(params[:code]) if ENV['SHOWOFF_EVAL_RUBY']
 
     return "Ruby Evaluation is off. To turn it on set ENV['SHOWOFF_EVAL_RUBY']"
+  end
+
+  get '/ping' do
+    slide = params[:slide]
+    client = request.ip
+    @analytics.info "ping received from #{client}, showing slide #{slide}"
   end
 
   get %r{(?:image|file)/(.*)} do

@@ -679,3 +679,8 @@ function nextPreShowImage() {
 function togglePause() {
   $("#pauseScreen").toggle();
 }
+
+$('.slide').live("showoff:show", function (event) {
+    var slide = $(event.target).attr("ref")
+    $.get('/ping', {slide: slide})
+});

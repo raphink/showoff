@@ -685,7 +685,7 @@ $('.slide').live("showoff:show", function (event) {
     $.get('/ping', {slide: slide})
 });
 
-$('.slide').live("showoff:next", function (event) {
-    var slide = $(event.target).attr("ref") + ' (next)'
+$('.slide').live("showoff:incr", function (event) {
+    var slide = $(event.target).attr("ref") + ' (incr)'
     $.get('/ping', {slide: slide})
 });

@@ -716,7 +716,7 @@ function getCurrentStyle()
   return styleChoiceString(current);
 }
 
-function setCurrentStyle(style)
+function setCurrentStyle(style, prop)
 {
   styleChoiceTags().each(function (i, el) {
     el.rel = 'alternate stylesheet';
@@ -725,6 +725,13 @@ function setCurrentStyle(style)
       el.rel = 'stylesheet';
     }
   });
+
+  if (prop) {
+    if ('presenterView' in window) {
+      var pv = window.presenterView;
+      pv.setCurrentStyle(style, false);
+    }
+  }
 }
 
 function setupStylePicker() {
@@ -757,7 +764,7 @@ function StyleListMenu()
 			var domItem = $("<li>")
             if (item.textName != undefined)
             {
-                choice = $("<a onclick=\"setCurrentStyle('" + item.textName + "'); $('#stylemenu').hide();\" href=\"#\">" + item.textName + "</a>")
+                choice = $("<a onclick=\"setCurrentStyle('" + item.textName + "', true); $('#stylemenu').hide();\" href=\"#\">" + item.textName + "</a>")
                 domItem.append(choice)
                 newMenu.append(domItem)
             }

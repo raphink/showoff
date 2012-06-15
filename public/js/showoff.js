@@ -755,9 +755,9 @@ function StyleListMenu()
 		for(var i in this.items) {
 			var item = this.items[i]
 			var domItem = $("<li>")
-            if (item.textName != 'undefined')
+            if (item.textName != undefined)
             {
-                choice = $("<a onclick=\"setCurrentStyle('" + item.textName + "');\" href=\"#\">" + item.textName + "</a>")
+                choice = $("<a onclick=\"setCurrentStyle('" + item.textName + "'); $('#stylemenu').hide();\" href=\"#\">" + item.textName + "</a>")
                 domItem.append(choice)
                 newMenu.append(domItem)
             }

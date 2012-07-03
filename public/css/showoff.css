@@ -1,6 +1,6 @@
 @media screen {
   body {
-			font-size: 100%;
+      font-size: 100%;
       font-family: "Gill Sans", Helvetica, Arial, sans-serif;
       background:#333;
       overflow:hidden;
@@ -387,6 +387,117 @@ a.fg-button { float:left; }
 #preshow_timer {
   bottom: 0px;
 }
+
+/* downloads page */
+/* we want scrolls! */
+body#download {
+  overflow:auto;
+  height: auto;
+}
+#download h1 {
+  font-size: 3em;
+}
+ul#downloads {
+    margin-left:  20%;
+    font-size: large;
+    list-style-type: disc;
+}
+ul#downloads li {
+    margin: 0.5em;
+}
+
+/**********************
+ ***   stats page   ***
+ **********************/
+/* we want scrolls! */
+body#stats {
+  overflow:auto;
+  height: auto;
+}
+
+/* apply some nifty rounding styles to the row */
+#stats div.row {
+  position: relative;
+  margin: 0.25em 1em;
+  padding: 0.1em;
+  background-color: #dfdfdf;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+}
+/* and to the bar inside the row */
+#stats div.bar {
+  height: 1.25em;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+}
+/* position the label to the top left and time to the top right */
+#stats div.row span.label {
+  position: absolute;
+  top: 0.15em;
+  left: 0.25em;
+}
+#stats div.time {
+  position: absolute;
+  top: 0.15em;
+  right: 0.25em;
+}
+
+/* style all three boxes */
+#stats div#least,
+#stats div#most,
+#stats div#all {
+  width: 45%;
+  border: 1px solid black;
+  -moz-border-radius: 1em;
+  -webkit-border-radius: 1em;
+  -khtml-border-radius: 1em;
+  border-radius: 1em;
+}
+
+/* least box */
+#stats div#least {
+  float: left;
+  margin-left: 3%;}
+#stats div#least div.bar {
+  background: #f5f56f;
+}
+
+/* most box */
+#stats div#most {
+  float: right;
+  margin-right: 3%;
+}
+#stats div#most div.bar {
+  background: #f45f5f;
+}
+
+/* listing of all stats */
+#stats div#all {
+  clear: both;
+  position: relative;
+  top: 3em;
+  margin: 0 3% 5em 3%;
+  width: 94%;
+}
+#stats div#all div.bar {
+  background: #66b366;
+}
+
+/* detail view */
+#stats div#all div.detail {
+  margin: 0 5em 0 1em;
+}
+#stats div#all div.detail div.bar {
+  background: #8484dd;
+}
+/**********************
+ *** end stats page ***
+ **********************/
+
 
 /** Print **/
 @media print {

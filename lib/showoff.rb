@@ -37,6 +37,8 @@ class ShowOff < Sinatra::Application
   set :pres_template, nil
   set :showoff_config, nil
   set :encoding, nil
+  set :downloads, nil
+  set :counter, nil
 
   def initialize(app=nil)
     super(app)
@@ -68,7 +70,6 @@ class ShowOff < Sinatra::Application
       settings.pres_template = showoff_json["templates"] 
     end
 
-
     @logger.debug settings.pres_template
 
     @cached_image_size = {}
@@ -78,6 +79,12 @@ class ShowOff < Sinatra::Application
 
     # Default asset path
     @asset_path = "./"
+
+    # Track downloadable files
+    @@downloads = Hash.new
+
+    # Page view time accumulator
+    @@counter = Hash.new
 
     # Initialize Markdown Configuration
     #MarkdownConfig::setup(settings.pres_dir)
@@ -216,9 +223,10 @@ class ShowOff < Sinatra::Application
         else
           content += "<div class=\"#{content_classes.join(' ')}\" ref=\"#{name}\">\n"
         end
+
         sl = Tilt[:markdown].new { slide.text }.render
         sl = update_p_classes(sl)
-        sl = update_special_content(sl)
+        sl = update_special_content(sl, @slide_count, name)
         sl = update_image_paths(name, sl, static, pdf)
         content += sl
         content += "</div>\n"
@@ -261,9 +269,14 @@ class ShowOff < Sinatra::Application
       markdown.gsub(/<p>\.(.*?) /, '<p class="\1">')
     end
 
-    def update_special_content(content)
+    def update_special_content(content, seq, name)
       doc = Nokogiri::HTML::DocumentFragment.parse(content)
+<<<<<<< HEAD
       %w[notes handouts exercise].each { |mark|  update_special_content_mark(doc, mark) }
+=======
+      %w[notes handouts solguide].each { |mark|  update_special_content_mark(doc, mark) }
+      update_download_links(doc, seq, name)
+>>>>>>> 14c4cb0... Enables progressive downloads and analytics
       doc.to_html
     end
 
@@ -279,6 +292,26 @@ class ShowOff < Sinatra::Application
       container.inner_html = markdown
     end
     private :update_special_content_mark
+
+    def update_download_links(doc, seq, name)
+      container = doc.css("p.download").first
+      return unless container
+
+      raw      = container.text
+      fixed    = raw.gsub(/^\.download ?/, '')
+      
+      # first create the data structure
+      # [ enabled, slide name, [array, of, files] ]
+      @@downloads[seq] = [ false, name, [] ]
+
+      fixed.each { |file|
+        # then push each file onto the list
+        @@downloads[seq][2].push(file)
+      }
+
+      container.remove
+    end
+    private :update_download_links
 
     def update_image_paths(path, slide, static=false, pdf=false)
       paths = path.split('/')
@@ -491,6 +524,56 @@ class ShowOff < Sinatra::Application
       erb :onepage
     end
 
+    def download(static=false)
+      @downloads = @@downloads
+      erb :download
+    end
+
+    def counter(static=false)
+      slide = request.params['page'].to_i
+      remote = request.env['REMOTE_HOST']
+
+      logger.debug "Ping: #{remote} : #{slide}"
+
+      # check to see if we need to enable a download link
+      if remote == 'localhost'
+        if @@downloads.has_key?(slide)
+          logger.debug "Enabling file download for slide #{slide}"
+          @@downloads[slide][0] = true
+        end
+      # otherwise, this is an audience viewer, so increment the slide view time counter
+      else
+        if not @@counter.has_key?(slide)
+          @@counter[slide] = Hash.new
+        end
+
+        if @@counter[slide].has_key?(remote)
+          @@counter[slide][remote] += 1
+        else
+          @@counter[slide][remote] = 1
+        end
+      end
+    end
+    
+    def stats(static=false)
+      if request.env['REMOTE_HOST'] == 'localhost'
+        # the presenter should have full stats
+        @counter = @@counter
+      end
+      
+      @all = Hash.new
+      @@counter.each do |slide, stats|
+        @all[slide] = 0
+        stats.map { |host, count| @all[slide] += count }
+      end
+      
+      # most and least five viewed slides
+      @least = @all.sort_by {|slide, time| time}[0..4]
+      @most = @all.sort_by {|slide, time| -time}[0..4]
+      
+      erb :stats
+    end
+
     def pdf(static=true)
       @slides = get_slides_html(static, true)
       @inline = true
@@ -604,7 +687,11 @@ class ShowOff < Sinatra::Application
   get %r{(?:image|file)/(.*)} do
     path = params[:captures].first
     full_path = File.join(settings.pres_dir, path)
-    send_file full_path
+    if File.exist?(full_path)
+        send_file full_path
+    else
+        raise Sinatra::NotFound
+    end
   end
 
   get %r{/(.*)} do
@@ -622,6 +709,20 @@ class ShowOff < Sinatra::Application
       else
         data
       end
+    end
+  end
+
+  not_found do
+    # Why does the asset path start from cwd??
+    @asset_path.slice!(/^./)
+    @env = request.env
+    erb :'404'
+  end
+
+  at_exit do
+    if defined?(@@counter)
+      viewstats = File.new("viewstats.json", "w")
+      viewstats.write @@counter.to_json
     end
   end
 end

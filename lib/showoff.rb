@@ -540,11 +540,10 @@ class ShowOff < Sinatra::Application
           @logger.debug "Enabling file download for slide #{slide}"
           @@downloads[slide][0] = true
         end
-        
+
         # update the current slide pointer if this is a ping from the instructor
-        referer = request.env['HTTP_REFERER']
-        referer = referer ? referer.split('/').last : ''
-        if referer == 'presenter'
+        if request.env['HTTP_REFERER'].match(/presenter$/)
+          @logger.debug "Updated current slide to #{slide}"
           @@current = slide
         end
       # otherwise, this is an audience viewer, so increment the slide view time counter
@@ -556,7 +555,7 @@ class ShowOff < Sinatra::Application
           if not @@counter.has_key?(slide)
             @@counter[slide] = Hash.new
           end
-  
+
           # a counter for this viewer
           if @@counter[slide].has_key?(remote)
             @@counter[slide][remote] += 1
@@ -564,10 +563,9 @@ class ShowOff < Sinatra::Application
             @@counter[slide][remote] = 1
           end
         end
-        
-        # return current slide to the client
-        "#{@@current}"
-      end      
+      end
+      # return current slide as a string to the client
+      "#{@@current}"
     end
     
     def stats(static=false)

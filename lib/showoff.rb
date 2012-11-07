@@ -64,7 +64,7 @@ class ShowOff < Sinatra::Application
     if File.exists?(ShowOffUtils.presentation_config_file)
       showoff_json = JSON.parse(File.read(ShowOffUtils.presentation_config_file))
       settings.showoff_config = showoff_json
-      
+
       # Set options for encoding, template and page size
       settings.encoding = showoff_json["encoding"]
       settings.page_size = showoff_json["page-size"] || "Letter"
@@ -266,7 +266,7 @@ class ShowOff < Sinatra::Application
     def process_content_for_all_slides(content, num_slides)
       content.gsub("~~~NUM_SLIDES~~~", num_slides.to_s)
     end
-    
+
 
     # find any lines that start with a <p>.(something) and turn them into <p class="something">
     def update_p_classes(markdown)
@@ -275,12 +275,8 @@ class ShowOff < Sinatra::Application
 
     def update_special_content(content, seq, name)
       doc = Nokogiri::HTML::DocumentFragment.parse(content)
-<<<<<<< HEAD
-      %w[notes handouts exercise].each { |mark|  update_special_content_mark(doc, mark) }
-=======
-      %w[notes handouts solguide].each { |mark|  update_special_content_mark(doc, mark) }
+      %w[notes handouts].each { |mark|  update_special_content_mark(doc, mark) }
       update_download_links(doc, seq, name)
->>>>>>> 14c4cb0... Enables progressive downloads and analytics
       doc.to_html
     end
 

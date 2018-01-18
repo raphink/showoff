@@ -36,8 +36,10 @@
         if(matches = text.match(/^{{(.*)}}$/) ) {
           keyword = matches[1];
 
-          if(keyword in settings.strings) {
-            item.text(settings.strings[keyword]);
+          var newText = keyword.split('.')
+                .reduce((o, i) => o[i], settings.strings);
+          if(newText !== undefined) {
+            item.text(newText);
           }
         }
 
